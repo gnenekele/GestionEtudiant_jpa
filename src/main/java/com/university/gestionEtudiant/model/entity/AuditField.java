@@ -1,22 +1,40 @@
 package com.university.gestionEtudiant.model.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
 
 
 @Data
-@MappedSuperclass   // ← Clé : JPA ne crée pas de table pour cette classe
-
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class) // <--- Indispensable
 public abstract class AuditField {
 
-
+    @CreatedBy
+    @Column(updatable = false)
   private String createdBy;
-  private LocalDateTime createdOn;
+    @LastModifiedBy
   private String modifiedBy;
+
+  @CreatedDate
+ @Column(updatable = false)
+ private LocalDateTime createdOn;
+
+  @LastModifiedDate
   private LocalDateTime modifiedOn;
-
-
-
 
 }

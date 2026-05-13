@@ -9,7 +9,11 @@ import lombok.Data;
 public class Filiere extends AuditField {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long idFiliere;
+  private   Long id;
+  @Column(nullable = false,unique = true)
+  private String sigle;
+
+  @Column(nullable = false,unique = true)
   private String libFiliere;
 
 }

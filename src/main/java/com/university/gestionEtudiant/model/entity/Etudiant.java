@@ -1,20 +1,27 @@
 package com.university.gestionEtudiant.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "EtudiantEtudiant")
 public class Etudiant extends AuditField {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-  private long idEtudiant;
+  private Long id;
+  @Column(nullable = false,unique = true)
   private String codeEtudiant;
   private String nomEtudiant;
   private String prenomEtudiant;
+ @Column(nullable = false,unique = true)
   private String matriculeEtudiant;
+    @JsonFormat(pattern = "yyyy-MM-dd")
   private String contactEtudiant;
   private String dateNaissEtudiant;
   private String emailEtudiant;

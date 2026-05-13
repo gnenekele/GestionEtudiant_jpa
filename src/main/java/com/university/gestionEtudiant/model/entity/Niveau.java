@@ -9,7 +9,7 @@ import lombok.Data;
 public class Niveau extends AuditField{
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long idNiveau;
+  private Long id;
   private String libNiveau;
 
 

@@ -9,7 +9,7 @@ import lombok.Data;
 public class Matiere extends AuditField {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long idMatiere;
+  private long id;
   private String libMatiere;
 
 
