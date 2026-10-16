@@ -4,8 +4,10 @@ import ci.tresorpublic.commons.error.AppException;
 import ci.tresorpublic.commons.logging.LogUtils;
 import com.university.gestionEtudiant.api.ExceptionMapper;
 import com.university.gestionEtudiant.api.MessageEnum;
-import com.university.gestionEtudiant.model.dto.FiliereDto;
+
+import com.university.gestionEtudiant.model.dto.FiliereFormDto;
 import com.university.gestionEtudiant.service.FiliereService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +55,7 @@ public class FiliereController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveFiliere(@RequestBody FiliereDto dto) {
+    public ResponseEntity<?> saveFiliere(@RequestBody FiliereFormDto dto) {
         log.info("HTTP POST /saveFiliere body={}", dto);
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.save(dto));
@@ -65,11 +67,11 @@ public class FiliereController {
     }
 
 
-    @PutMapping
-    public ResponseEntity<?> updateFiliere(@RequestBody FiliereDto dto) {
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateFiliere(@PathVariable Long id, @Valid @RequestBody FiliereFormDto dto) {
         log.info("HTTP PUT /updateFiliere body={}", dto);
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(service.update(dto));
+            return ResponseEntity.status(HttpStatus.OK).body(service.update(id,dto));
         } catch (Exception e) {
             log.error("HTTP PUT /updateFiliere failed");
             throw new AppException(

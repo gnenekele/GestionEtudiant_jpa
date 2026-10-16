@@ -124,7 +124,7 @@ public class PeriodeServiceImpl implements PeriodeService{
         try {
             periodeRepos.deleteById(id);
         } catch (Exception e) {
-            log.error("delete etudiant failed: ", e);
+            log.error("delete periode failed: ", e);
             throw new AppException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
     }

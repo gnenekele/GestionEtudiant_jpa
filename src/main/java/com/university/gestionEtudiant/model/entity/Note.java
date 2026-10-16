@@ -9,11 +9,15 @@ import lombok.Data;
 public class Note extends AuditField {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long idNote;
-  private long idEvaluation;
-  private long idEtudiant;
+  private Long id;
   private String libNote;
 
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "idEvaluation", nullable = false)
+  private Evaluation evaluation;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "idEtudiant", nullable = false)
+  private Etudiant etudiant;
 }

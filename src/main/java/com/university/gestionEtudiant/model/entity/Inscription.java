@@ -10,12 +10,22 @@ import java.time.LocalDateTime;
 public class Inscription extends AuditField {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long idInscription;
-  private long idEtudiant;
-  private long idAnnee;
-  private long idClasse;
+  private Long id;
   private LocalDateTime inscriteLe;
   private String inscritePar;
+
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "idEtudiant", nullable = false)
+  private Etudiant idEtudiant;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "idAnnee", nullable = false)
+  private AnneeAcademique idAnnee;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "idClasse", nullable = false)
+  private  Classe idClasse;
 
 
 

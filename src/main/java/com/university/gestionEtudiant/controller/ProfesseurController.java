@@ -4,7 +4,7 @@ import ci.tresorpublic.commons.error.AppException;
 import ci.tresorpublic.commons.logging.LogUtils;
 import com.university.gestionEtudiant.api.ExceptionMapper;
 import com.university.gestionEtudiant.api.MessageEnum;
-import com.university.gestionEtudiant.model.dto.ProfesseurDto;
+import com.university.gestionEtudiant.model.dto.ProfesseurFormDto;
 import com.university.gestionEtudiant.service.ProfesseurService;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -53,7 +53,7 @@ public class ProfesseurController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveProf(@RequestBody ProfesseurDto dto) {
+    public ResponseEntity<?> saveProf(@RequestBody ProfesseurFormDto dto) {
         log.info("HTTP POST /saveProf body={}", dto);
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.save(dto));
@@ -63,11 +63,11 @@ public class ProfesseurController {
                     ExceptionMapper.getErrorCode(e), MessageEnum.GLOBAL_ALERT.getText(), e.getMessage());
         }
     }
-    @PutMapping
-    public ResponseEntity<?> updateProf(@RequestBody ProfesseurDto dto) {
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateProf(@PathVariable Long id,@RequestBody ProfesseurFormDto dto) {
         log.info("HTTP PUT /updateProf body={}", dto);
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(service.update(dto));
+            return ResponseEntity.status(HttpStatus.OK).body(service.update(id, dto));
         } catch (Exception e) {
             log.error("HTTP PUT /updateProf failed");
             throw new AppException(

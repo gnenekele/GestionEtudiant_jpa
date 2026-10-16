@@ -20,7 +20,7 @@ public class AnneeAcademiqueMapper {
     // DTO → Entité (pour créer ou modifier)
     public AnneeAcademique toEntity(AnneeDto dto) {
 
-        return new AnneeAcademique(dto.id(),dto.annee(),null);
+        return new AnneeAcademique(dto.id(),dto.annee());
     }
 
 //    // Liste → Liste de DTOs

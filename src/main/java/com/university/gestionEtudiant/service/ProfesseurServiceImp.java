@@ -6,7 +6,9 @@ import ci.tresorpublic.commons.logging.LogUtils;
 import com.university.gestionEtudiant.api.BadRequestException;
 import com.university.gestionEtudiant.api.DataNotFoundException;
 import com.university.gestionEtudiant.api.MessageEnum;
-import com.university.gestionEtudiant.model.dto.ProfesseurDto;
+
+import com.university.gestionEtudiant.model.dto.ProfesseurFormDto;
+import com.university.gestionEtudiant.model.dto.ProfesseurTableDto;
 import com.university.gestionEtudiant.model.entity.Etudiant;
 import com.university.gestionEtudiant.model.entity.Professeur;
 import com.university.gestionEtudiant.model.mapper.ProfesseurMapper;
@@ -21,14 +23,15 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ProfesseurServiceImp implements ProfesseurService{
+public class ProfesseurServiceImp implements ProfesseurService {
 
-    private  final ProfesseurRepository profRepos;
+    private final ProfesseurRepository profRepos;
     private final ProfesseurMapper profMapper;
+    private final MatriculeGeneratorService matriculeGenerator;
     private static final Logger log = LogUtils.getLogger(Professeur.class);
 
     @Override
-    public List<ProfesseurDto> getAllProf(Pageable pageable) {
+    public List<ProfesseurTableDto> getAllProf(Pageable pageable) {
         log.info("loading getAllProf page {} (size={})", pageable.getPageNumber(), pageable.getPageSize());
         try {
             return profRepos.findAll(pageable).getContent().stream()
@@ -42,15 +45,15 @@ public class ProfesseurServiceImp implements ProfesseurService{
 
 
     @Override
-    public ProfesseurDto getProfById(Long id) {
-        log.info("getEtudiantById  for {}",id);
+    public ProfesseurTableDto getProfById(Long id) {
+        log.info("getEtudiantById  for {}", id);
         try {
             Optional<Professeur> data = profRepos.findById(id);
             if (data.isPresent()) {
                 return profMapper.toDto(data.get());
             }
         } catch (Exception e) {
-            log.info("getEtudiantById  failed:",e);
+            log.info("getEtudiantById  failed:", e);
             throw new AppException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
         throw new DataNotFoundException(MessageEnum.DATA_NOT_FOUND.getText());
@@ -58,79 +61,91 @@ public class ProfesseurServiceImp implements ProfesseurService{
 
 
     @Override
-    public ProfesseurDto save(ProfesseurDto dto) {
+    public ProfesseurTableDto save(ProfesseurFormDto dto) {
         log.info("save Prof");
-        if (dto.id() != null) {
-            throw new BadRequestException(MessageEnum.ID_NOT_REQUIRED.getText());}
-        // verification des doubles
-        verifUniqueProf (dto.codeProf(), dto.matriculeProf(), null);
+        verifUniqueProf (dto.nomProf(), dto.prenomProf(), dto.email(), null);
+        // Génération automatique stricte (plus de vérification du DTO)
+        String matriculFinal = matriculeGenerator.genererMatriculeProfesseur();
+
         try {
-            return profMapper.toDto(profRepos.save(profMapper.toEntity(dto)));
+            Professeur prof = Professeur.builder()
+                    .matriculeProf(matriculFinal)
+                    .nomProf(dto.nomProf())
+                    .prenomProf(dto.prenomProf())
+                    .dateNaissanceProf(dto.dateNaissanceProf())
+                    .sexeProf(dto.sexeProf())
+                    .contactProf(dto.contactProf())
+                    .email(dto.email())
+                    .build();
+            Professeur profSauvegarde = profRepos.save(prof);
+            return profMapper.toDto(profSauvegarde);
 
         } catch (Exception e) {
             log.error("save Prof failed: ", e);
-            throw new AppException(ErrorCode.INTERNAL_ERROR,e.getMessage());
+            throw new AppException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
     }
 
     @Override
-    public ProfesseurDto update(ProfesseurDto dto) {
+    public ProfesseurTableDto update(Long id, ProfesseurFormDto dto) {
         log.info("update Prof");
-        if (dto.id() == null) {
-            throw new BadRequestException(MessageEnum.ID_NOT_REQUIRED.getText());
-        }
         // verification des doubles
-        verifUniqueProf (dto.codeProf(), dto.matriculeProf(), dto.id());
-        try{
-            Optional<Professeur> etudiant = profRepos.findById(dto.id());
-            if (etudiant.isPresent()){
-                return profMapper.toDto(profRepos.save(profMapper.toEntity(dto)));
-            }
-        }
-        catch (Exception e) {
+        verifUniqueProf (dto.nomProf(), dto.prenomProf(), dto.email(), id);
+
+        String matriculFinal = matriculeGenerator.genererMatriculeProfesseur();
+
+        try {
+            Professeur prof = Professeur.builder()
+                    .id(id)
+                    .matriculeProf(matriculFinal)
+                    .nomProf(dto.nomProf())
+                    .prenomProf(dto.prenomProf())
+                    .dateNaissanceProf(dto.dateNaissanceProf())
+                    .sexeProf(dto.sexeProf())
+                    .contactProf(dto.contactProf())
+                    .email(dto.email())
+                    .build();
+            Professeur profSauvegarde = profRepos.save(prof);
+            return profMapper.toDto(profSauvegarde);
+        } catch (Exception e) {
             log.error("update Prof failed: ", e);
-            throw new AppException(ErrorCode.INTERNAL_ERROR,e.getMessage());
+            throw new AppException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
-        throw new DataNotFoundException(MessageEnum.DATA_NOT_FOUND.getText());
     }
 
 
     @Override
     public void deleteProf(Long id) {
 
-            // Check if data exists and throw an exception if not found
-            Optional<Professeur> data = profRepos.findById(id);
-            if (data.isEmpty()) {
-                throw new DataNotFoundException(MessageEnum.DATA_NOT_FOUND.getText());
-            }
+        // Check if data exists and throw an exception if not found
+        Optional<Professeur> data = profRepos.findById(id);
+        if (data.isEmpty()) {
+            throw new DataNotFoundException(MessageEnum.DATA_NOT_FOUND.getText());
+        }
 
-            try {
-                profRepos.deleteById(id);
-            } catch (Exception e) {
-                log.error("delete etudiant failed: ", e);
-                throw new AppException(ErrorCode.INTERNAL_ERROR, e.getMessage());
-            }
-    }
-
-    // The `verifUniqueAnnee` function allows you to check if the label exists.
-    private void verifUniqueProf(String code, String matriculeProf, Long id) {
-        if (id == null) {
-            // Mode AJOUT
-            if (profRepos.existsByCodeProf(code)) {
-                throw new BadRequestException(ErrorCode.CONFLICT, MessageEnum.DUPLICATE_LABEL.getText());
-            }
-            if (profRepos.existsByMatriculeProf(matriculeProf)) {
-                throw new BadRequestException(ErrorCode.CONFLICT, "Ce matricule existe déjà");
-            }
-        } else {
-            // Mode MODIFICATION
-            if (profRepos.existsByCodeProfAndIdNot(code, id)) {
-                throw new BadRequestException(ErrorCode.CONFLICT, MessageEnum.DUPLICATE_LABEL.getText());
-            }
-            if (profRepos.existsByMatriculeProfAndIdNot(matriculeProf, id)) {
-                throw new BadRequestException(ErrorCode.CONFLICT, MessageEnum.DUPLICATE_LABEL.getText());
-            }
-
+        try {
+            profRepos.deleteById(id);
+        } catch (Exception e) {
+            log.error("delete etudiant failed: ", e);
+            throw new AppException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
     }
-}
+
+
+    // The `verifUniqueAnnee` function allows you to check if the label exists.
+    private void verifUniqueProf(String nomProf,String prenomProf,String email,Long id) {
+        boolean exists;
+        if (id == null) {
+            // Mode AJOUT
+            exists = profRepos.existsByNomProfAndPrenomProfAndEmail(nomProf,prenomProf, email);
+            }
+         else {
+                exists = profRepos.existsByNomProfAndPrenomProfAndEmailAndIdNot(nomProf, prenomProf, email, id);
+
+                }
+                // 2. Levée de l'exception si le doublon existe
+                if (exists) {
+                    throw new BadRequestException(ErrorCode.CONFLICT, MessageEnum.DUPLICATE_LABEL.getText());
+                }
+            }
+        }

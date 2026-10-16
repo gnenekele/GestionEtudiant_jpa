@@ -2,11 +2,14 @@ package com.university.gestionEtudiant.service;
 
 import ci.tresorpublic.commons.error.AppException;
 import ci.tresorpublic.commons.error.ErrorCode;
+import ci.tresorpublic.commons.error.Errors;
 import ci.tresorpublic.commons.logging.LogUtils;
 import com.university.gestionEtudiant.api.BadRequestException;
 import com.university.gestionEtudiant.api.DataNotFoundException;
 import com.university.gestionEtudiant.api.MessageEnum;
-import com.university.gestionEtudiant.model.dto.FiliereDto;
+import com.university.gestionEtudiant.model.dto.FiliereFormDto;
+import com.university.gestionEtudiant.model.dto.FiliereTableDto;
+
 import com.university.gestionEtudiant.model.entity.Filiere;
 import com.university.gestionEtudiant.model.mapper.FiliereMapper;
 import com.university.gestionEtudiant.repository.FiliereRepository;
@@ -30,7 +33,7 @@ public class FiliereServiceImp implements FiliereService{
 
 
     @Override
-    public List<FiliereDto> getAllFiliere(Pageable pageable) {
+    public List<FiliereTableDto> getAllFiliere(Pageable pageable) {
         log.info("loading getAllFiliere page {} (size={})", pageable.getPageNumber(), pageable.getPageSize());
         try {
             return filiereRepos.findAll(pageable).getContent().stream()
@@ -45,7 +48,7 @@ public class FiliereServiceImp implements FiliereService{
 
 
     @Override
-    public FiliereDto getFiliereById(Long id) {
+    public FiliereTableDto getFiliereById(Long id) {
 
         log.info("getFiliereById  for {}",id);
         try {
@@ -64,41 +67,48 @@ public class FiliereServiceImp implements FiliereService{
 
 
     @Override
-    public FiliereDto save(FiliereDto dto) {
-       log.info("save Filiere");
-                if (dto.id() != null) {
-                    throw new BadRequestException(MessageEnum.ID_NOT_REQUIRED.getText());}
-                // verification des doubles
-                verifUniqueFiliere (dto.libFiliere(), null);
-                try {
-                    return filiereMapper.toDto(filiereRepos.save(filiereMapper.toEntity(dto)));
+    public FiliereTableDto save(FiliereFormDto dto) {
+        log.info("save Filiere");
 
-                } catch (Exception e) {
-                    log.error("save Filiere failed: ", e);
-                    throw new AppException(ErrorCode.INTERNAL_ERROR,e.getMessage());
-                }
-            }
+        // 1. Vérification des doublons au moment de la création
+        verifUniqueFiliere(dto.libFiliere(), null);
+
+        try {
+            // 2. Conversion et sauvegarde directe de l'entité
+            return filiereMapper.toDto(filiereRepos.save(
+                    Filiere.builder()
+                            .typeFiliere(dto.typeFiliere())
+                            .libFiliere(dto.libFiliere())
+                            .sigle(dto.sigle())
+                            .build()
+            ));
+
+        } catch (Exception e) {
+            log.error("save Filiere failed: ", e);
+            throw new AppException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        }
+    }
 
     @Override
-    public FiliereDto update(FiliereDto dto) {
+    public FiliereTableDto update(Long id,FiliereFormDto dto) {
         log.info("update filiere");
-        if (dto.id() == null) {
-            throw new BadRequestException(MessageEnum.ID_NOT_REQUIRED.getText());
-        }
-        // verification des doubles
-        verifUniqueFiliere(dto.libFiliere(), dto.id());
 
-        try{
-            Optional<Filiere> filiere = filiereRepos.findById(dto.id());
-            if (filiere.isPresent()){
-                return filiereMapper.toDto(filiereRepos.save(filiereMapper.toEntity(dto)));
-            }
+        Optional<Filiere> existing = filiereRepos.findById(id);
+        if (existing.isEmpty()) {
+            throw Errors.notFound(MessageEnum.DATA_NOT_FOUND.getText(), id.toString());
         }
-        catch (Exception e) {
+
+        verifUniqueFiliere(dto.libFiliere(), id);
+
+        try {
+           existing.get().setLibFiliere(dto.libFiliere());
+           existing.get().setSigle(dto.sigle());
+           existing.get().setTypeFiliere(dto.typeFiliere());
+           return filiereMapper.toDto(filiereRepos.save(existing.get()));
+        } catch (Exception e) {
             log.error("update filiere failed: ", e);
-            throw new AppException(ErrorCode.INTERNAL_ERROR,e.getMessage());
+            throw new AppException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
-        throw new DataNotFoundException(MessageEnum.DATA_NOT_FOUND.getText());
     }
 
 

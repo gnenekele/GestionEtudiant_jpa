@@ -6,11 +6,13 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.Date;
 
-public record ProfesseurDto (
+public record ProfesseurTableDto (
         Long id,
 
-        @NotBlank(message = "codeProf est obligatoire")
-        String codeProf,
+        String matriculeProf,
+
+       // @NotBlank(message = "codeProf est obligatoire")
+//        String codeProf,
 
         @NotBlank(message = "nomProf est obligatoire")
         String nomProf,
@@ -18,19 +20,19 @@ public record ProfesseurDto (
         @NotBlank(message = "prenomProf est obligatoire")
         String prenomProf,
 
-        @NotBlank(message = "matriculeProf est obligatoire")
-         String matriculeProf,
+        @NotBlank(message = "sexeProf est obligatoire")
+        String sexeProf,
 
         @NotBlank(message = "contactProf est obligatoire")
          String contactProf,
+
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "UTC")
         @NotNull(message = "dateNaissanceProf est obligatoire")
         Date dateNaissanceProf,
 
         @NotBlank(message = "email est obligatoire")
-         String email,
+         String email
 
-        @NotBlank(message = "sexeProf est obligatoire")
-         String sexeProf
+
 )
 {}

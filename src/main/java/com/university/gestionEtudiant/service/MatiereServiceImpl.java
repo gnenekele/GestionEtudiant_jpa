@@ -2,11 +2,16 @@ package com.university.gestionEtudiant.service;
 
 import ci.tresorpublic.commons.error.AppException;
 import ci.tresorpublic.commons.error.ErrorCode;
+import ci.tresorpublic.commons.error.Errors;
 import ci.tresorpublic.commons.logging.LogUtils;
 import com.university.gestionEtudiant.api.BadRequestException;
 import com.university.gestionEtudiant.api.DataNotFoundException;
 import com.university.gestionEtudiant.api.MessageEnum;
-import com.university.gestionEtudiant.model.dto.MatiereDto;
+
+import com.university.gestionEtudiant.model.dto.MatiereFormDto;
+import com.university.gestionEtudiant.model.dto.MatiereTableDto;
+import com.university.gestionEtudiant.model.entity.Classe;
+import com.university.gestionEtudiant.model.entity.Filiere;
 import com.university.gestionEtudiant.model.entity.Matiere;
 import com.university.gestionEtudiant.model.mapper.MatiereMapper;
 
@@ -28,7 +33,7 @@ public class MatiereServiceImpl implements MatiereService{
 
 
     @Override
-    public MatiereDto getMatiereById(Long id) {
+    public MatiereTableDto getMatiereById(Long id) {
         log.info("getMatiereById  for {}",id);
         try {
             Optional<Matiere> data = matiereRepos.findById(id);
@@ -43,7 +48,7 @@ public class MatiereServiceImpl implements MatiereService{
     }
 
     @Override
-    public List<MatiereDto> getAllMatiere(Pageable pageable) {
+    public List<MatiereTableDto> getAllMatiere(Pageable pageable) {
         log.info("loading getAllMatiere page {} (size={})", pageable.getPageNumber(), pageable.getPageSize());
         try {
             return matiereRepos.findAll(pageable).getContent().stream()
@@ -56,41 +61,45 @@ public class MatiereServiceImpl implements MatiereService{
     }
 
     @Override
-    public MatiereDto save(MatiereDto dto) {
+    public MatiereTableDto save(MatiereFormDto dto) {
         log.info("save Matiere");
-        if (dto.id() != null) {
-            throw new BadRequestException(MessageEnum.ID_NOT_REQUIRED.getText());}
+
         // verification des doubles
         verifUniqueMatiere (dto.libMatiere(), null);
         try {
-            return matiereMapper.toDto(matiereRepos.save(matiereMapper.toEntity(dto)));
+            return matiereMapper.toDto(matiereRepos.save(
+                    Matiere.builder()
+                            .libMatiere(dto.libMatiere())
+                            .coefficient(dto.coefficient())
+                            .build()));
 
         } catch (Exception e) {
             log.error("save Matiere failed: ", e);
             throw new AppException(ErrorCode.INTERNAL_ERROR,e.getMessage());
         }
+
     }
 
     @Override
-    public MatiereDto update(MatiereDto dto) {
+    public MatiereTableDto update(Long id,MatiereFormDto dto) {
         log.info("update Matiere");
-        if (dto.id() == null) {
-            throw new BadRequestException(MessageEnum.ID_NOT_REQUIRED.getText());
+        Optional<Matiere> existing = matiereRepos.findById(id);
+        if (existing.isEmpty()) {
+            throw Errors.notFound(MessageEnum.DATA_NOT_FOUND.getText(), id.toString());
         }
         // verification des doubles
-        verifUniqueMatiere(dto.libMatiere(), dto.id());
+        verifUniqueMatiere(dto.libMatiere(), id);
 
         try{
-            Optional<Matiere> matiere = matiereRepos.findById(dto.id());
-            if (matiere.isPresent()){
-                return matiereMapper.toDto(matiereRepos.save(matiereMapper.toEntity(dto)));
-            }
+         existing.get().setLibMatiere(dto.libMatiere());
+         existing.get().setCoefficient(dto.coefficient());
+            return matiereMapper.toDto(matiereRepos.save(existing.get()));
         }
         catch (Exception e) {
             log.error("update Matiere failed: ", e);
             throw new AppException(ErrorCode.INTERNAL_ERROR,e.getMessage());
         }
-        throw new DataNotFoundException(MessageEnum.DATA_NOT_FOUND.getText());
+
     }
 
 

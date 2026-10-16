@@ -58,11 +58,11 @@ public class PeriodeController {
 
     @PostMapping
     public ResponseEntity<?> savePeriode(@Valid @RequestBody PeriodeDto dto) {
-        log.info("HTTP POST /annee body={}", dto);
+        log.info("HTTP POST /savePeriode body={}", dto);
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(periodeService.save(dto));
         } catch (Exception e) {
-            log.error("HTTP POST /annee failed", e);
+            log.error("HTTP POST /savePeriode failed", e);
             throw new AppException(
                     ExceptionMapper.getErrorCode(e), MessageEnum.GLOBAL_ALERT.getText(), e.getMessage());
         }

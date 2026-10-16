@@ -1,8 +1,6 @@
 package com.university.gestionEtudiant.service;
-
-
-import com.university.gestionEtudiant.model.dto.FiliereDto;
-
+import com.university.gestionEtudiant.model.dto.FiliereFormDto;
+import com.university.gestionEtudiant.model.dto.FiliereTableDto;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
 
@@ -10,9 +8,9 @@ import java.util.List;
 
 public interface FiliereService {
 
-    FiliereDto save (FiliereDto dto);
-    FiliereDto update (FiliereDto dto);
-    FiliereDto getFiliereById (Long id);
-    List<FiliereDto> getAllFiliere(Pageable pageable);
+    FiliereTableDto save (FiliereFormDto dto);
+    FiliereTableDto update (Long id,FiliereFormDto dto);
+    FiliereTableDto getFiliereById (Long id);
+    List<FiliereTableDto> getAllFiliere(Pageable pageable);
     void deleteFiliere (Long id);
 }

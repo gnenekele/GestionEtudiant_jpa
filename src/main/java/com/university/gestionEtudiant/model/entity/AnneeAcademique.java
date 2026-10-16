@@ -29,7 +29,7 @@ public class AnneeAcademique extends AuditField {
   private String  annee;
 
   // ✅ Relation inverse : une année a plusieurs périodes
-  @OneToMany(mappedBy = "anneeAcademique", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.LAZY)
-  private List<Periode> periodes ;
+// @OneToMany(mappedBy = "anneeAcademique", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.LAZY)
+  //private List<Periode> periodes ;
 
 }

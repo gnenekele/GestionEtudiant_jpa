@@ -1,5 +1,4 @@
 package com.university.gestionEtudiant.model.entity;
-
 import com.university.gestionEtudiant.validator.ValidPeriode;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -13,21 +12,29 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-//@ValidPeriode
-@Table(name = "Periode")
+@ValidPeriode
+@Table(
+        name = "Periode",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_periode_unique",
+                        columnNames = {"typePeriode", "dateDeb", "dateFin", "idAnnee"}    // Contrainte combinée d'unicité
+                )
+        })
 public class Periode extends AuditField {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  //@NotNull(message = "contactProf est idAnnee")
-  //private long idAnnee;
+
   @NotBlank(message = "typePeriode est obligatoire")
   private String typePeriode;
+
   @NotNull(message = "dateDeb est obligatoire")
-  @Column(nullable = false,unique = true)
+  @Column(nullable = false)
   private LocalDate dateDeb;
+
   @NotNull(message = "dateFin est obligatoire")
-  @Column(nullable = false,unique = true)
+  @Column(nullable = false)
   private LocalDate dateFin;
 
   @ManyToOne(fetch = FetchType.LAZY)

@@ -4,9 +4,9 @@ import ci.tresorpublic.commons.error.AppException;
 import ci.tresorpublic.commons.logging.LogUtils;
 import com.university.gestionEtudiant.api.ExceptionMapper;
 import com.university.gestionEtudiant.api.MessageEnum;
-import com.university.gestionEtudiant.model.dto.MatiereDto;
+
 import com.university.gestionEtudiant.model.dto.NiveauDto;
-import com.university.gestionEtudiant.model.entity.Niveau;
+
 import com.university.gestionEtudiant.service.NiveauService;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;

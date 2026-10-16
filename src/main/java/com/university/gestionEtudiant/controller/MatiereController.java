@@ -4,7 +4,7 @@ import ci.tresorpublic.commons.error.AppException;
 import ci.tresorpublic.commons.logging.LogUtils;
 import com.university.gestionEtudiant.api.ExceptionMapper;
 import com.university.gestionEtudiant.api.MessageEnum;
-import com.university.gestionEtudiant.model.dto.MatiereDto;
+import com.university.gestionEtudiant.model.dto.MatiereFormDto;
 import com.university.gestionEtudiant.service.MatiereService;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -52,7 +52,7 @@ public class MatiereController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveMatiere(@RequestBody MatiereDto dto) {
+    public ResponseEntity<?> saveMatiere(@RequestBody MatiereFormDto dto) {
         log.info("HTTP POST /saveMatiere body={}", dto);
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.save(dto));
@@ -62,11 +62,11 @@ public class MatiereController {
                     ExceptionMapper.getErrorCode(e), MessageEnum.GLOBAL_ALERT.getText(), e.getMessage());
         }
     }
-    @PutMapping
-    public ResponseEntity<?> updateMatiere(@RequestBody MatiereDto dto) {
+    @PutMapping  ("/{id}")
+    public ResponseEntity<?> updateMatiere(@PathVariable Long id,@RequestBody MatiereFormDto dto) {
         log.info("HTTP PUT /updateMatiere body={}", dto);
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(service.update(dto));
+            return ResponseEntity.status(HttpStatus.OK).body(service.update(id,dto));
         } catch (Exception e) {
             log.error("HTTP PUT /updateMatiere failed");
             throw new AppException(
